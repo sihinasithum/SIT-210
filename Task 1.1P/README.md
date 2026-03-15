@@ -20,7 +20,7 @@ Button: (PIN D2)
 
 ## 🖼️ **Demo**
 
-
+![Demo](https://github.com/sihinasithum/SIT-210/blob/main/Task%201.1P/Assets/Copy%20of%20Arduino%20Nano%20(2).png)
 
 
 ***
