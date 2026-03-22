@@ -20,14 +20,21 @@ Jumper wires
 - Hall light: Yellow LED (PIN D8) 
 - Button: (PIN D2)
 
-### setup function
+### setup() function
 The button is set as INPUT_PULLUP, 
 which means the button reads HIGH normally and goes LOW when pressed. 
 The two LED pins are set as outputs so we can turn them on and off.
 
-### loop function
-This constantly checks if the button is 
-being pressed. When the button is pressed,
+### Functions
+The code is divided into four dedicated functions,
+- **turnOnLights()** — Turns both the porch (green) and hall (yellow) LEDs ON at the same time
+- **porchSequence()** — Waits 30 seconds then turns the porch light OFF
+- **hallSequence()** — Waits 30 seconds then turns the hall light OFF
+- **waitForRelease()** — Waits until the button is released to prevent the sequence from triggering multiple times in a row
+
+
+### loop() function
+The loop() function constantly checks if the button is being pressed. When pressed, it calls each module in order to carry out the lighting sequence.
 
 1. Both the porch light and hall light turn ON at the same time
 2. The system waits 30 seconds
