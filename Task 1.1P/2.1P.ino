@@ -1,6 +1,6 @@
-const int porchPin = 9;
-const int hallPin = 8;
-const int buttonPin = 2;
+const int porchPin = 9; // green (porch)
+const int hallPin = 8; // yellow (hall)
+const int buttonPin = 2; // button
 
 void setup() {
     pinMode(porchPin, OUTPUT);
@@ -14,13 +14,13 @@ void turnOnLights() {
     digitalWrite(hallPin, HIGH);
 }
 
-//porch light timing
+//porch light timing 
 void porchSequence() {
     delay(30000);
     digitalWrite(porchPin, LOW);
 }
 
-//hall light timing
+//hall light timing 
 void hallSequence() {
     delay(30000);
     digitalWrite(hallPin, LOW);
