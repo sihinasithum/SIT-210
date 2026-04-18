@@ -2,7 +2,7 @@
 
 ## 📋 Description
 
-Linda is back from her Bingo nights at the retirement village  but finding the light switch in the dark is just as tricky as finding her keys. This system solves that automatically. When Linda approaches the door at night, a PIR motion sensor detects her presence and instantly switches ON both the porch and hallway lights  no button pressing needed. If for any reason the motion sensor misses her, a slider switch mounted near the door gives her a reliable backup to toggle the lights manually. Both triggers are handled using **hardware interrupts**, making the system highly responsive without wasting time constantly checking sensor states in the loop.
+Linda is back from her Bingo nights at the retirement village , but finding the light switch in the dark is just as tricky as finding her keys. This system solves that automatically. When Linda approaches the door at night, a PIR motion sensor detects her presence and instantly switches ON both the porch and hallway lights , no button pressing needed. The porch light stays ON for 30 seconds and the hallway light for 60 seconds, then both turn off automatically. If for any reason the motion sensor misses her, a slider switch mounted near the door gives her a reliable backup to toggle the lights manually. Both triggers are handled using **hardware interrupts**, making the system highly responsive without wasting time constantly checking sensor states in the loop.
 
 ---
 
@@ -38,10 +38,10 @@ Install these from **Arduino IDE > Tools > Manage Libraries**:
 | PIR Sensor | GND | GND |
 | Slider Switch | COM (middle pin) | GND |
 | Slider Switch | Outer pin | D3 |
-| LED 1 | + (long leg) | D4 |
-| LED 1 | – (short leg) | GND via 220Ω |
-| LED 2 | + (long leg) | D5 |
-| LED 2 | – (short leg) | GND via 220Ω |
+| LED 1 (Yellow) | + (long leg) | D4 |
+| LED 1 (Yellow) | – (short leg) | GND via 220Ω |
+| LED 2 (Red) | + (long leg) | D5 |
+| LED 2 (Red) | – (short leg) | GND via 220Ω |
 | BH1750 | VCC | 3.3V |
 | BH1750 | GND | GND |
 | BH1750 | SDA | A4 |
@@ -54,14 +54,15 @@ Install these from **Arduino IDE > Tools > Manage Libraries**:
 
 ## 💡 How It Works
 
-1. On startup the Arduino initialises the BH1750 light sensor and attaches two hardware interrupts  one on the PIR pin (D2) and one on the slider switch pin (D3)
+1. On startup the Arduino initialises the BH1750 light sensor and attaches two hardware interrupts , one on the PIR pin (D2) and one on the slider switch pin (D3)
 2. When Linda approaches the door, the PIR sensor triggers the motion interrupt (`RISING` edge)
-3. The interrupt sets a `motionFlag`  the main loop then reads the current lux level from the BH1750
+3. The interrupt sets a `motionFlag` , the main loop then checks if the lights are already ON first before reading the lux level
 4. If it is dark (below 50 lux), both LEDs switch ON and the Serial Monitor prints a confirmation message
-5. If the lights are already ON when motion is detected, the system skips the lux check and simply prints that the lights are already on  no unnecessary toggling
+5. If the lights are already ON when motion is detected, the system skips the lux check and simply prints that the lights are already on , no unnecessary toggling
 6. If it is bright outside (above 50 lux), the lights stay OFF and the Serial Monitor prints a "too bright" message
-7. At any time, sliding the switch triggers the switch interrupt (`CHANGE` edge) which toggles both LEDs regardless of the lux level  giving Linda full manual backup control
-8. The Serial Monitor prints a message for every state change so the system behaviour can be monitored and verified
+7. The yellow porch light (LED1) automatically turns OFF after 30 seconds and the red hallway light (LED2) turns OFF after 60 seconds using a `millis()` timer , no `delay()` is used so interrupts keep working during the countdown
+8. At any time, sliding the switch triggers the switch interrupt (`CHANGE` edge) which toggles both LEDs regardless of the lux level , giving Linda full manual backup control
+9. The Serial Monitor prints a message for every state change so the system behaviour can be monitored and verified
 
 ---
 
@@ -69,27 +70,28 @@ Install these from **Arduino IDE > Tools > Manage Libraries**:
 
 ### Pin setup
 - PIR sensor signal: D2 (interrupt, RISING)
-- Slider switch: D3 (interrupt, CHANGE  INPUT_PULLUP, no resistor needed)
-- LED 1: D4 (output)
-- LED 2: D5 (output)
+- Slider switch: D3 (interrupt, CHANGE , INPUT_PULLUP, no resistor needed)
+- LED 1 (Yellow): D4 (output)
+- LED 2 (Red): D5 (output)
 - BH1750: SDA -> A4, SCL -> A5
 
 ### ISR functions
-Two minimal Interrupt Service Routines are used  they only set a flag and return immediately. This is the correct and safe way to use interrupts on Arduino, as ISRs must be as short as possible:
-- **`onMotion()`**  sets `motionFlag = true` when PIR detects movement
-- **`onSwitch()`**  sets `switchFlag = true` when the slider switch changes state
+Two minimal Interrupt Service Routines are used , they only set a flag and return immediately. This is the correct and safe way to use interrupts on Arduino, as ISRs must be as short as possible:
+- **`onMotion()`** , sets `motionFlag = true` when PIR detects movement
+- **`onSwitch()`** , sets `switchFlag = true` when the slider switch changes state
 
 ### `setup()` function
 Initialises Serial, Wire, and the BH1750 sensor. Configures all pin modes and attaches both interrupts using `attachInterrupt()` with `digitalPinToInterrupt()` for safe pin mapping on the SAMD21.
 
 ### `setLEDs()` function
-A shared helper that sets both LEDs to the same state and updates the `ledsOn` boolean. Called by both the motion and switch logic to keep LED control consistent and avoid code duplication.
+A shared helper that sets both LEDs to the same state and updates the `ledsOn` boolean. When turning ON, it also records `lightsOnTime = millis()` to start the auto-off countdown. Called by both the motion and switch logic to keep LED control consistent.
 
 ### `loop()` function
 The main loop checks the two flags set by the ISRs and handles the actual logic:
 
 1. If `motionFlag` is set -> check if lights are already ON -> if not, read lux -> switch ON if dark
 2. If `switchFlag` is set -> toggle both LEDs to the opposite of their current state
+3. If lights are ON -> check elapsed time -> LED1 OFF at 30s, LED2 OFF at 60s
 
 ***
 
