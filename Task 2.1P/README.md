@@ -1,13 +1,20 @@
-# 🌡️ Room Temperature Monitor
+# 🌡️💡 Room Conditions Monitor
 
-An Arduino-based IoT project that reads room temperature using a **DHT11 sensor** and uploads the data to **ThingSpeak** every 30 seconds over WiFi.
-This project was built to help automate and monitor the environmental conditions of Linda's  home, so that temperature levels can be tracked remotely through a simple web interface.
+An Arduino based IoT project that reads room temperature and light level
+using a **DHT11 sensor** and a **Photodiode**, and uploads the data to
+**ThingSpeak** every 30 seconds over WiFi.
+This project was built to help automate and monitor the environmental
+conditions of Linda's home, so that temperature and light levels can be
+tracked remotely through a simple web interface.
 
 ---
 
 ## 📋 Project Overview
 
-This project was built for **SIT210**. The Arduino Nano 33 IoT reads temperature data from a DHT11 sensor and sends it to a ThingSpeak channel where Linda's carers can view it as a live chart on the web.
+This project was built for **SIT210**. The Arduino Nano 33 IoT reads
+temperature data from a DHT11 sensor and light level from a Photodiode,
+and sends both to a ThingSpeak channel where Linda's carers can view them
+as live charts on the web.
 
 ---
 
@@ -15,32 +22,39 @@ This project was built for **SIT210**. The Arduino Nano 33 IoT reads temperature
 
 | Component | Description |
 |---|---|
-| Arduino Nano 33 IoT | Microcontroller with built-in WiFi |
+| Arduino Nano 33 IoT | Microcontroller |
 | DHT11 Sensor Module | Temperature and humidity sensor |
+| Photodiode (FIT0180) | Analogue light sensor |
+| 10k ohm Resistor | For photodiode voltage divider |
 | Jumper Wires | For connections |
 | USB Cable | To power and upload code |
-| bread bord|
+| Breadboard | For circuit connections |
 
 ---
 
-## 🔌 Pin Connection
+## 🔌 Pin Connections
 
-| DHT11  Pin | Arduino Pin |
+### DHT11 Temperature Sensor
+| DHT11 Pin | Arduino Pin |
 |---|---|
 | VCC | 3.3V |
 | GND | GND |
 | DATA | A1 |
 
->  **Note:** The Arduino Nano 33 IoT runs on **3.3V logic only**. Do NOT connect to 5V.
+### Photodiode (FIT0180)
+| Photodiode | Arduino Pin |
+|---|---|
+| Short leg (cathode) | A0 + 10k ohm resistor to 3.3V |
+| Long leg (anode) | GND |
+
+> **Note:** The Arduino Nano 33 IoT runs on **3.3V logic only**.
+> Do NOT connect to 5V.
 
 ---
-## 🔧 Demo
-![demo](https://github.com/sihinasithum/SIT-210/blob/main/Task%202.1P/Assets/Copy%20of%20Arduino%20Nano%20Temp.png)
 
----
 ## 📦 Libraries Required
 
-Install these from **Arduino IDE > Sketch > Include Library > Manage Libraries**:
+Install these from **Arduino IDE -> Sketch -> Include Library -> Manage Libraries**:
 
 | Library | Author |
 |---|---|
@@ -56,8 +70,9 @@ Install these from **Arduino IDE > Sketch > Include Library > Manage Libraries**
 1. Create a free account at [thingspeak.com](https://thingspeak.com)
 2. Create a new channel called **RoomConditions**
 3. Add **Field 1** and name it `Temperature`
-4. Copy your **Write API Key** from the API Keys tab
-5. Copy your **Channel ID**
+4. Add **Field 2** and name it `Light Level`
+5. Copy your **Write API Key** from the API Keys tab
+6. Copy your **Channel ID**
 
 ---
 
@@ -71,4 +86,15 @@ const char* WIFI_PASSWORD = "Your_WiFi_Password";
 
 unsigned long CHANNEL_ID    = YOUR_CHANNEL_ID;
 const char*   WRITE_API_KEY = "YOUR_WRITE_API_KEY";
+```
 
+---
+
+## 📊 Data
+
+| Field | Sensor | Unit |
+|---|---|---|
+| Field 1 | DHT11 | Celsius (°C) |
+| Field 2 | Photodiode | Percentage (%) |
+
+Data is uploaded to ThingSpeak every **30 seconds**.
